@@ -36,15 +36,15 @@ impl Printer {
                 match ci {
                     7 => print!("{:02}  ", ci),
                     15 => print!("{:02} | ", ci),
-                    se  => {
+                    se => {
                         if se < 15 {
                             print!("{:02} ", se);
                         } else {
                             // because i know this char is printable
                             // print!("{} ", (65 + se -16) as char);
-                            print!("{:02} ", se -16);
+                            print!("{:02} ", se - 16);
                         }
-                    },
+                    }
                 }
             }
             println!("|");
@@ -69,7 +69,7 @@ impl Printer {
         self.idx += 1;
         Ok(())
     }
-    fn print_ascii(&mut self)-> io::Result<()> {
+    fn print_ascii(&mut self) -> io::Result<()> {
         print!("| ");
         for c in self.ascii.iter() {
             print!("{} ", format!("{:02}", Byte(*c).as_char()));
