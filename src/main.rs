@@ -6,7 +6,16 @@ use std::fs::File;
 use std::io::{self, prelude::*};
 
 const MAX_COUNT: usize = std::usize::MAX;
+struct Byte(u8);
 
+impl Byte {
+    fn as_char(self) -> char {
+        match self.0 {
+            c if c.is_ascii_alphanumeric() => c as char,
+            _ => '.',
+        }
+    }
+}
 struct Printer {
     idx: usize,
     ascii: Vec<u8>,
@@ -31,12 +40,14 @@ impl Printer {
                         if se < 15 {
                             print!("{:02} ", se);
                         } else {
-                            print!("{} ", (65 + se -16) as char);
+                            // because i know this char is printable
+                            // print!("{} ", (65 + se -16) as char);
+                            print!("{:02} ", se -16);
                         }
                     },
                 }
             }
-            println!();
+            println!("|");
         }
         // print offset
         if self.idx % 16 == 1 {
@@ -59,11 +70,11 @@ impl Printer {
         Ok(())
     }
     fn print_ascii(&mut self)-> io::Result<()> {
-        print!("|");
+        print!("| ");
         for c in self.ascii.iter() {
-            print!("{:02} ", *c as char);
+            print!("{} ", format!("{:02}", Byte(*c).as_char()));
         }
-        println!();
+        println!("|");
         self.ascii.clear();
         Ok(())
     }
