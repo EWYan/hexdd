@@ -9,40 +9,62 @@ const MAX_COUNT: usize = std::usize::MAX;
 
 struct Printer {
     idx: usize,
+    ascii: Vec<u8>,
 }
 
 impl Printer {
     fn new() -> Printer {
-        Printer { idx: 1 }
+        Printer {
+            idx: 1,
+            ascii: vec![],
+        }
     }
     fn print_byte(&mut self, b: u8) -> io::Result<()> {
         // print column header
         if self.idx == 1 {
             print!("offset\\col ");
-            for ci in 0..16 {
+            for ci in 0..32_u8 {
                 match ci {
                     7 => print!("{:02}  ", ci),
-                    _ => print!("{:02} ", ci),
+                    15 => print!("{:02} | ", ci),
+                    se  => {
+                        if se < 15 {
+                            print!("{:02} ", se);
+                        } else {
+                            print!("{} ", (65 + se -16) as char);
+                        }
+                    },
                 }
             }
             println!();
         }
-        // print offset 
+        // print offset
         if self.idx % 16 == 1 {
             print!("0x{:08x} ", self.idx - 1);
         }
         // print byte
         print!("{:02x} ", b);
+        // store byte to vec
+        self.ascii.push(b);
         // control LF
         match self.idx % 16 {
             8 => print!(" "),
             0 => {
-                println!();
-            },
+                self.print_ascii()?;
+            }
             _ => {}
         }
         // work statistics
         self.idx += 1;
+        Ok(())
+    }
+    fn print_ascii(&mut self)-> io::Result<()> {
+        print!("|");
+        for c in self.ascii.iter() {
+            print!("{:02} ", *c as char);
+        }
+        println!();
+        self.ascii.clear();
         Ok(())
     }
 }
@@ -86,7 +108,7 @@ fn hexdump() -> io::Result<()> {
         for b in &buff[..cnt] {
             let res = printer.print_byte(*b);
             match res {
-                Ok(_) => {}, 
+                Ok(_) => {}
                 Err(_) => break,
             }
             if printer.idx > bytes_cnt {
@@ -94,7 +116,11 @@ fn hexdump() -> io::Result<()> {
             }
         }
     }
-    println!("\nTotal Bytes: 0x{:08X}({})", printer.idx - 1, printer.idx - 1);
+    println!(
+        "\nTotal Bytes: 0x{:08X}({})",
+        printer.idx - 1,
+        printer.idx - 1
+    );
     Ok(())
 }
 
